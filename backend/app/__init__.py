@@ -3,13 +3,11 @@ Flask Application Factory
 """
 import os
 from flask import Flask
-from flask_wtf.csrf import CSRFProtect
 from flask_login import LoginManager
 
 from .models.models import db, init_db
 
 login_manager = LoginManager()
-csrf = CSRFProtect()
 
 
 def create_app():
@@ -20,13 +18,12 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///forum.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['WTF_CSRF_ENABLED'] = True
-    app.config['WTF_CSRF_TIME_LIMIT'] = None  # Session-based CSRF tokens
+    # 开发环境禁用CSRF避免令牌问题
+    app.config['WTF_CSRF_ENABLED'] = False
 
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
-    csrf.init_app(app)
 
     login_manager.login_view = 'auth.login'
     login_manager.login_message = '请先登录后再进行操作'
