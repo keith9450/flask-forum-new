@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}个人设置{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="content" style="max-width: 600px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-header">
+                <span>编辑个人资料</span>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('user.settings_profile') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" value="{{ current_user.username }}" disabled>
+                        <small style="color: var(--text-secondary);">用户名不可修改</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                        <small style="color: var(--text-secondary);">邮箱不可修改</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">个人简介</label>
+                        <textarea name="bio" class="form-control" placeholder="介绍一下自己..." maxlength="500" rows="4">{{ current_user.bio or '' }}</textarea>
+                        <small style="color: var(--text-secondary);">最多500个字符</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                    <a href="{{ url_for('user.profile', user_id=current_user.id) }}" class="btn btn-outline">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

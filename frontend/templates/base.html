@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}论坛首页{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="/" class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor">
+                    <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2zm0 4c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8 3.582-8 8-8zm0 3c-2.761 0-5 2.239-5 5s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5zm0 2c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3z"/>
+                </svg>
+                我的论坛
+            </a>
+            
+            <nav class="nav">
+                <a href="/" class="{% if request.endpoint == 'posts.home' %}active{% endif %}">首页</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('posts.create_post') }}" class="{% if request.endpoint == 'posts.create_post' %}active{% endif %}">发帖</a>
+                {% endif %}
+            </nav>
+            
+            <div id="user-area">
+                {% if current_user.is_authenticated %}
+                <div class="user-menu">
+                    <a href="{{ url_for('user.profile', user_id=current_user.id) }}">
+                        <img src="{{ current_user.avatar }}" class="user-avatar" alt="{{ current_user.username }}">
+                        <span>{{ current_user.username }}</span>
+                    </a>
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">管理后台</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">退出</a>
+                </div>
+                {% else %}
+                <div class="user-menu">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline">登录</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">注册</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="container" style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 我的论坛 - 安全、简洁、高效</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

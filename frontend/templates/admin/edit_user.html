@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}编辑用户{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="content" style="max-width: 600px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-header">
+                <span>编辑用户 - {{ edit_user.username }}</span>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_user', user_id=edit_user.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="form-group">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control" value="{{ edit_user.username }}" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">邮箱</label>
+                        <input type="email" class="form-control" value="{{ edit_user.email }}" disabled>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">角色</label>
+                        <select name="role" class="form-control">
+                            <option value="user" {% if edit_user.role == 'user' %}selected{% endif %}>用户</option>
+                            <option value="moderator" {% if edit_user.role == 'moderator' %}selected{% endif %}>版主</option>
+                            <option value="admin" {% if edit_user.role == 'admin' %}selected{% endif %}>管理员</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="is_active" {% if edit_user.is_active %}checked{% endif %}>
+                            账号启用状态
+                        </label>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary">保存</button>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

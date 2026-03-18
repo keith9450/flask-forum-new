@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.username }} 的主页{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="content">
+        <!-- User Profile Card -->
+        <div class="card">
+            <div class="card-body" style="display: flex; gap: 30px; align-items: center;">
+                <img src="{{ profile_user.avatar }}" style="width: 100px; height: 100px; border-radius: 50%;">
+                <div style="flex: 1;">
+                    <h2 style="margin-bottom: 5px;">{{ profile_user.username }}</h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 10px;">
+                        {% if profile_user.role == 'admin' %}
+                        <span class="badge badge-warning">管理员</span>
+                        {% elif profile_user.role == 'moderator' %}
+                        <span class="badge badge-success">版主</span>
+                        {% else %}
+                        <span class="badge badge-primary">用户</span>
+                        {% endif %}
+                        · 注册于 {{ profile_user.created_at.strftime('%Y-%m-%d') }}
+                    </p>
+                    {% if profile_user.bio %}
+                    <p>{{ profile_user.bio }}</p>
+                    {% endif %}
+                </div>
+                <div style="text-align: center; padding: 0 20px; border-left: 1px solid var(--border);">
+                    <div style="font-size: 24px; font-weight: bold; color: var(--primary);">{{ post_count }}</div>
+                    <div style="color: var(--text-secondary);">帖子</div>
+                </div>
+                <div style="text-align: center; padding: 0 20px; border-left: 1px solid var(--border);">
+                    <div style="font-size: 24px; font-weight: bold; color: var(--primary);">{{ comment_count }}</div>
+                    <div style="color: var(--text-secondary);">评论</div>
+                </div>
+                
+                {% if current_user.is_authenticated and current_user.id == profile_user.id %}
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <a href="{{ url_for('user.settings_profile') }}" class="btn btn-outline">编辑资料</a>
+                    <a href="{{ url_for('user.settings_password') }}" class="btn btn-outline">修改密码</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- User Posts -->
+        <h3 style="margin: 20px 0;">帖子列表</h3>
+        
+        <div class="post-list">
+            {% for post in posts.items %}
+            <div class="post-item">
+                <a href="{{ url_for('posts.view_post', post_id=post.id) }}" class="post-title">
+                    {% if post.is_pinned %}
+                    <span class="badge badge-warning">置顶</span>
+                    {% endif %}
+                    {% if post.is_essence %}
+                    <span class="badge badge-success">精华</span>
+                    {% endif %}
+                    {{ post.title }}
+                </a>
+                
+                <div style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">
+                    {% if post.category %}
+                    <span class="badge badge-primary">{{ post.category.name }}</span>
+                    {% endif %}
+                    <span>发布于 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <span>· {{ post.view_count }} 阅读</span>
+                    <span>· {{ post.comment_count }} 评论</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    还没有发布帖子
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if posts.pages > 1 %}
+        <div class="pagination">
+            {% if posts.has_prev %}
+            <a href="{{ url_for('user.profile', user_id=profile_user.id, page=posts.prev_num) }}">&laquo; 上一页</a>
+            {% endif %}
+            
+            {% for p in range(1, posts.pages + 1) %}
+                {% if p == posts.page %}
+                <span class="active">{{ p }}</span>
+                {% else %}
+                <a href="{{ url_for('user.profile', user_id=profile_user.id, page=p) }}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if posts.has_next %}
+            <a href="{{ url_for('user.profile', user_id=profile_user.id, page=posts.next_num) }}">下一页 &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

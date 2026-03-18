@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="content">
+        <!-- Post Detail -->
+        <div class="post-detail">
+            <div class="post-detail-header">
+                <h1 class="post-detail-title">
+                    {% if post.is_pinned %}
+                    <span class="badge badge-warning">置顶</span>
+                    {% endif %}
+                    {% if post.is_essence %}
+                    <span class="badge badge-success">精华</span>
+                    {% endif %}
+                    {% if post.is_locked %}
+                    <span class="badge badge-primary">锁定</span>
+                    {% endif %}
+                    {{ post.title }}
+                </h1>
+                
+                <div class="post-header">
+                    <img src="{{ post.author.avatar }}" class="post-avatar" alt="{{ post.author.username }}">
+                    <div class="post-meta">
+                        <a href="{{ url_for('user.profile', user_id=post.author.id) }}" class="post-author">{{ post.author.username }}</a>
+                        <div class="post-time">
+                            发布于 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% if post.updated_at != post.created_at %}
+                            · 最后编辑于 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="post-footer" style="margin-left: auto;">
+                        <span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            {{ post.view_count }}
+                        </span>
+                        <span class="like-count">{{ post.like_count }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-detail-content">
+                {{ post.content|safe }}
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 15px;">
+                {% if current_user.is_authenticated %}
+                <button class="btn {% if user_liked %}btn-primary{% else %}btn-outline{% endif %}" onclick="likePost({{ post.id }})">
+                    {% if user_liked %}已赞{% else %}点赞{% endif %}
+                </button>
+                {% endif %}
+                
+                {% if current_user.is_authenticated and (current_user.id == post.user_id or current_user.is_admin()) %}
+                <a href="{{ url_for('posts.edit_post', post_id=post.id) }}" class="btn btn-outline">编辑</a>
+                <form method="POST" action="{{ url_for('posts.delete_post', post_id=post.id) }}" style="display: inline;" onsubmit="return confirmDelete('确定要删除这篇帖子吗？');">
+                    <button type="submit" class="btn btn-outline" style="color: var(--danger);">删除</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="comment-section" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 20px;">评论 ({{ comments|length }})</h3>
+            
+            {% if current_user.is_authenticated and not post.is_locked %}
+            <form method="POST" action="{{ url_for('posts.add_comment', post_id=post.id) }}" style="margin-bottom: 30px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="form-group">
+                    <textarea name="content" class="form-control" placeholder="写下你的评论..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">发表评论</button>
+            </form>
+            {% elif post.is_locked %}
+            <div class="alert alert-warning">该帖子已锁定，无法评论</div>
+            {% else %}
+            <div class="alert alert-info">
+                <a href="{{ url_for('auth.login') }}">登录</a>后发表评论
+            </div>
+            {% endif %}
+            
+            <!-- Comments List -->
+            <div class="comments-list">
+                {% for comment in comments %}
+                <div class="comment-item">
+                    <img src="{{ comment.author.avatar }}" class="comment-avatar" alt="{{ comment.author.username }}">
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <a href="{{ url_for('user.profile', user_id=comment.author.id) }}" class="comment-author">{{ comment.author.username }}</a>
+                            <span class="comment-time">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                        <div class="comment-body">
+                            {{ comment.content }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not comments %}
+                <p style="text-align: center; color: var(--text-secondary); padding: 40px;">暂无评论，快来抢沙发吧！</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Author Info -->
+        <div class="card">
+            <div class="card-header">作者信息</div>
+            <div class="card-body" style="text-align: center;">
+                <img src="{{ post.author.avatar }}" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px;">
+                <div style="font-weight: 600; font-size: 18px;">{{ post.author.username }}</div>
+                <div style="color: var(--text-secondary); font-size: 14px; margin-top: 5px;">
+                    {% if post.author.role == 'admin' %}管理员{% elif post.author.role == 'moderator' %}版主{% else %}用户{% endif %}
+                </div>
+                {% if post.author.bio %}
+                <p style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;">{{ post.author.bio }}</p>
+                {% endif %}
+                <a href="{{ url_for('user.profile', user_id=post.author.id) }}" class="btn btn-outline" style="margin-top: 15px;">查看主页</a>
+            </div>
+        </div>
+        
+        <!-- Related Posts -->
+        {% if post.category %}
+        <div class="card">
+            <div class="card-header">分类信息</div>
+            <div class="card-body">
+                <div style="margin-bottom: 15px;">
+                    <span class="badge badge-primary" style="font-size: 16px; padding: 8px 16px;">{{ post.category.name }}</span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 14px;">{{ post.category.description }}</p>
+                <a href="{{ url_for('posts.home', category=post.category.id) }}" class="btn btn-outline" style="margin-top: 15px;">查看更多</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function likePost(postId) {
+    try {
+        const response = await fetch(`/post/${postId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const btn = document.querySelector('button[class*="btn"]');
+            if (data.action === 'liked') {
+                btn.className = 'btn btn-primary';
+                btn.textContent = '已赞';
+            } else {
+                btn.className = 'btn btn-outline';
+                btn.textContent = '点赞';
+            }
+            document.querySelector('.like-count').textContent = data.like_count;
+        }
+    } catch (error) {
+        alert('请先登录');
+        window.location.href = '/login';
+    }
+}
+</script>
+{% endblock %}

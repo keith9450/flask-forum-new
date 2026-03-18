@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台{% endblock %}
+
+{% block content %}
+<div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar" style="width: 200px;">
+        <div class="card">
+            <div class="card-header">管理菜单</div>
+            <div class="card-body" style="padding: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn {% if request.endpoint == 'admin.dashboard' %}btn-primary{% else %}btn-outline{% endif %}" style="text-align: left;">仪表盘</a>
+                    <a href="{{ url_for('admin.users') }}" class="btn {% if request.endpoint == 'admin.users' %}btn-primary{% else %}btn-outline{% endif %}" style="text-align: left;">用户管理</a>
+                    <a href="{{ url_for('admin.posts') }}" class="btn {% if request.endpoint == 'admin.posts' %}btn-primary{% else %}btn-outline{% endif %}" style="text-align: left;">帖子管理</a>
+                    <a href="{{ url_for('admin.categories') }}" class="btn {% if request.endpoint == 'admin.categories' %}btn-primary{% else %}btn-outline{% endif %}" style="text-align: left;">分类管理</a>
+                    <a href="{{ url_for('admin.announcements') }}" class="btn {% if request.endpoint == 'admin.announcements' %}btn-primary{% else %}btn-outline{% endif %}" style="text-align: left;">公告管理</a>
+                    <hr style="margin: 10px 0;">
+                    <a href="{{ url_for('posts.home') }}" class="btn btn-outline" style="text-align: left;">返回论坛</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <h1 style="margin-bottom: 20px;">仪表盘</h1>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_users }}</div>
+                <div class="stat-label">用户总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ total_posts }}</div>
+                <div class="stat-label">帖子总数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ total_comments }}</div>
+                <div class="stat-label">评论总数</div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Recent Users -->
+            <div class="card">
+                <div class="card-header">最近注册用户</div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>邮箱</th>
+                            <th>角色</th>
+                            <th>注册时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                        <tr>
+                            <td><a href="{{ url_for('user.profile', user_id=user.id) }}">{{ user.username }}</a></td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                <span class="badge badge-warning">管理员</span>
+                                {% elif user.role == 'moderator' %}
+                                <span class="badge badge-success">版主</span>
+                                {% else %}
+                                <span class="badge badge-primary">用户</span>
+                                {% endif %}
+</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Popular Posts -->
+            <div class="card">
+                <div class="card-header">本周热门帖子</div>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>作者</th>
+                            <th>浏览</th>
+                            <th>评论</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in popular_posts %}
+                        <tr>
+                            <td><a href="{{ url_for('posts.view_post', post_id=post.id) }}">{{ post.title[:30] }}...</a></td>
+                            <td>{{ post.author.username }}</td>
+                            <td>{{ post.view_count }}</td>
+                            <td>{{ post.comment_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Category Stats -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">分类统计</div>
+            <div class="card-body">
+                {% for stat in category_stats %}
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border);">
+                    <span>{{ stat.name }}</span>
+                    <span class="badge badge-primary">{{ stat.count }} 帖子</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

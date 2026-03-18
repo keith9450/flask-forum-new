@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}分类管理{% endblock %}
+
+{% block content %}
+<div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar" style="width: 200px;">
+        <div class="card">
+            <div class="card-header">管理菜单</div>
+            <div class="card-body" style="padding: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline" style="text-align: left;">仪表盘</a>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline" style="text-align: left;">用户管理</a>
+                    <a href="{{ url_for('admin.posts') }}" class="btn btn-outline" style="text-align: left;">帖子管理</a>
+                    <a href="{{ url_for('admin.categories') }}" class="btn btn-primary" style="text-align: left;">分类管理</a>
+                    <a href="{{ url_for('admin.announcements') }}" class="btn btn-outline" style="text-align: left;">公告管理</a>
+                    <hr style="margin: 10px 0;">
+                    <a href="{{ url_for('posts.home') }}" class="btn btn-outline" style="text-align: left;">返回论坛</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <h1 style="margin-bottom: 20px;">分类管理</h1>
+        
+        <!-- Create Category -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">添加新分类</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.create_category') }}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">名称</label>
+                        <input type="text" name="name" class="form-control" placeholder="分类名称" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">别名</label>
+                        <input type="text" name="slug" class="form-control" placeholder="英文别名" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">描述</label>
+                        <input type="text" name="description" class="form-control" placeholder="分类描述">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0; width: 100px;">
+                        <label class="form-label">排序</label>
+                        <input type="number" name="sort_order" class="form-control" value="0">
+                    </div>
+                    <button type="submit" class="btn btn-primary">添加</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Categories Table -->
+        <div class="card">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>排序</th>
+                        <th>名称</th>
+                        <th>别名</th>
+                        <th>描述</th>
+                        <th>帖子数</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cat in categories %}
+                    <tr>
+                        <td>{{ cat.sort_order }}</td>
+                        <td>{{ cat.name }}</td>
+                        <td>{{ cat.slug }}</td>
+                        <td>{{ cat.description or '-' }}</td>
+                        <td>{{ cat.post_count }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_category', category_id=cat.id) }}" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;">编辑</a>
+                            {% if cat.post_count == 0 %}
+                            <form method="POST" action="{{ url_for('admin.delete_category', category_id=cat.id) }}" style="display: inline;" onsubmit="return confirmDelete('确定要删除分类 {{ cat.name }} 吗？');">
+                                <button type="submit" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; color: var(--danger);">删除</button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" disabled title="有帖子无法删除">删除</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

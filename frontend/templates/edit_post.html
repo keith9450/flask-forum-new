@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}编辑帖子{% endblock %}
+
+{% block content %}
+<div class="main">
+    <div class="content" style="max-width: 800px; margin: 0 auto;">
+        <div class="card">
+            <div class="card-header">
+                <span>编辑帖子</span>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('posts.edit_post', post_id=post.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="form-group">
+                        <label class="form-label">标题 *</label>
+                        <input type="text" name="title" class="form-control" value="{{ post.title }}" required minlength="5" maxlength="200">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">分类 *</label>
+                        <select name="category_id" class="form-control" required>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == post.category_id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">内容 *</label>
+                        <textarea name="content" class="form-control" required minlength="10" style="min-height: 300px;">{{ post.content }}</textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                        <a href="{{ url_for('posts.view_post', post_id=post.id) }}" class="btn btn-outline">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

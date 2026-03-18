@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}公告管理{% endblock %}
+
+{% block content %}
+<div class="main">
+    <!-- Sidebar -->
+    <div class="sidebar" style="width: 200px;">
+        <div class="card">
+            <div class="card-header">管理菜单</div>
+            <div class="card-body" style="padding: 10px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline" style="text-align: left;">仪表盘</a>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline" style="text-align: left;">用户管理</a>
+                    <a href="{{ url_for('admin.posts') }}" class="btn btn-outline" style="text-align: left;">帖子管理</a>
+                    <a href="{{ url_for('admin.categories') }}" class="btn btn-outline" style="text-align: left;">分类管理</a>
+                    <a href="{{ url_for('admin.announcements') }}" class="btn btn-primary" style="text-align: left;">公告管理</a>
+                    <hr style="margin: 10px 0;">
+                    <a href="{{ url_for('posts.home') }}" class="btn btn-outline" style="text-align: left;">返回论坛</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <h1 style="margin-bottom: 20px;">公告管理</h1>
+        
+        <!-- Create Announcement -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">发布新公告</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.create_announcement') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="form-group">
+                        <label class="form-label">标题</label>
+                        <input type="text" name="title" class="form-control" placeholder="公告标题" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">内容</label>
+                        <textarea name="content" class="form-control" placeholder="公告内容" required style="min-height: 100px;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="is_pinned">
+                            置顶显示
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">发布</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Announcements List -->
+        <div class="card">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>标题</th>
+                        <th>状态</th>
+                        <th>发布时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ann in announcements %}
+                    <tr>
+                        <td>{{ ann.id }}</td>
+                        <td>{{ ann.title }}</td>
+                        <td>
+                            {% if ann.is_pinned %}
+                            <span class="badge badge-warning">置顶</span>
+                            {% else %}
+                            <span style="color: var(--text-secondary);">普通</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_announcement', announcement_id=ann.id) }}" style="display: inline;" onsubmit="return confirmDelete('确定要删除公告 "{{ ann.title }}" 吗？');">
+                                <button type="submit" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; color: var(--danger);">删除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
