@@ -1,12 +1,20 @@
 """
 User profile views
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
+import os
+import uuid
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort, current_app, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
 from ..models.models import db, User, Post, Comment
 
 user_bp = Blueprint('user', __name__)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @user_bp.route('/user/<int:user_id>')
@@ -93,3 +101,44 @@ def settings_password():
         return redirect(url_for('user.profile', user_id=current_user.id))
 
     return render_template('settings_password.html')
+
+
+@user_bp.route('/settings/avatar', methods=['GET', 'POST'])
+@login_required
+def settings_avatar():
+    """Update avatar"""
+    if request.method == 'POST':
+        # Check if file is provided
+        if 'avatar' not in request.files:
+            flash('请选择图片文件', 'error')
+            return redirect(url_for('user.settings_avatar'))
+        
+        file = request.files['avatar']
+        
+        if file.filename == '':
+            flash('请选择图片文件', 'error')
+            return redirect(url_for('user.settings_avatar'))
+        
+        if file and allowed_file(file.filename):
+            # Generate unique filename
+            ext = file.filename.rsplit('.', 1)[1].lower()
+            filename = f"avatar_{current_user.id}_{uuid.uuid4().hex}.{ext}"
+            
+            # Create upload folder if not exists
+            upload_folder = os.path.join(current_app.root_path, '..', 'frontend', 'static', 'images', 'avatars')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            # Save file
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+            
+            # Update user avatar
+            current_user.avatar = f'/static/images/avatars/{filename}'
+            db.session.commit()
+            
+            flash('头像已更新！', 'success')
+            return redirect(url_for('user.profile', user_id=current_user.id))
+        else:
+            flash('只支持 PNG, JPG, GIF, WEBP 格式的图片', 'error')
+    
+    return render_template('settings_avatar.html')

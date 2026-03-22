@@ -16,7 +16,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    avatar = db.Column(db.String(255), default='/static/images/default-avatar.png')
+    avatar = db.Column(db.String(255), default='/static/images/admin-avatar.png')
     bio = db.Column(db.String(500))
     role = db.Column(db.String(20), default='user')  # user, moderator, admin
     is_active = db.Column(db.Boolean, default=True)
@@ -193,9 +193,40 @@ def init_db(app):
             admin = User(
                 username='ForumAdmin2024',
                 email='admin@forum.com',
-                role='admin'
+                role='admin',
+                avatar='/static/images/admin-avatar.png',
+                bio='热爱动漫的论坛管理员，喜欢结交志同道合的朋友~'
             )
             admin.set_password('Xk9#mP2$vL7@nQ4w')
+
+            # Create sample user
+            user = User(
+                username='DemoUser2024',
+                email='demo@forum.com',
+                role='user',
+                avatar='/static/images/user-avatar.png',
+                bio='动漫爱好者一枚，追番中~'
+            )
+            user.set_password('Demo@Pass456')
+
+            # Create more sample users
+            user2 = User(
+                username='Sakura_Anime',
+                email='sakura@forum.com',
+                role='user',
+                avatar='/static/images/user-avatar.png',
+                bio='樱花粉的忠实粉丝！二次元冲冲冲！'
+            )
+            user2.set_password('Sakura123')
+
+            user3 = User(
+                username='Otaku_King',
+                email='otaku@forum.com',
+                role='moderator',
+                avatar='/static/images/moderator-avatar.png',
+                bio='资深二次元，欢迎讨论番剧！'
+            )
+            user3.set_password('Otaku123')
 
             # Create sample categories
             categories = [
@@ -203,33 +234,96 @@ def init_db(app):
                 Category(name='技术支持', slug='tech', description='技术问题与解答', icon='code', sort_order=2),
                 Category(name='资源共享', slug='resources', description='分享优质资源', icon='share', sort_order=3),
                 Category(name='建议反馈', slug='feedback', description='产品建议与问题反馈', icon='lightbulb', sort_order=4),
+                Category(name='番剧推荐', slug='anime', description='推荐好看的动漫作品', icon='star', sort_order=5),
+                Category(name='二次元同人', slug='fanart', description='同人创作与分享', icon='heart', sort_order=6),
             ]
 
-            # Create sample user
-            user = User(
-                username='DemoUser2024',
-                email='demo@forum.com',
-                role='user'
-            )
-            user.set_password('Demo@Pass456')
-
-            # Create sample post
+            # Create sample posts
             sample_post = Post(
-                title='欢迎来到论坛！',
-                content='欢迎大家来到我们的论坛！这里可以讨论各种话题，分享知识和经验。',
+                title='欢迎来到动漫论坛！🎉',
+                content='欢迎大家来到我们的动漫论坛！这里可以讨论各种动漫话题，分享番剧推荐，结交志同道合的朋友。\n\n希望大家在社区里和谐相处，共同维护一个良好的交流环境！',
                 user_id=1,
                 category_id=1,
-                is_pinned=True
+                is_pinned=True,
+                view_count=520
+            )
+
+            post2 = Post(
+                title='【推荐】2026年必看番剧清单',
+                content='给大家整理了一下2026年值得期待的番剧：\n\n1. 《紫罗兰永恒花园》续作 - 感人至深的治愈系作品\n2. 《鬼灭之刃》第三季 - 热度依旧不减\n3. 《进击的巨人》完结篇 - 必看神作\n4. 《咒术回战》第二季 - 热血战斗番\n5. 《夏日大作战》重制版 - 经典重映\n\n大家最期待哪一部呢？',
+                user_id=2,
+                category_id=5,
+                is_essence=True,
+                view_count=888
+            )
+
+            post3 = Post(
+                title='新手求助：如何开始学习动漫制作？',
+                content='最近对动漫制作很感兴趣，但是不知道从何学起。有没有大佬能推荐一下学习路线？\n\n目前会一点PS和AI，想学习原画和动画制作。',
+                user_id=3,
+                category_id=2,
+                view_count=256
+            )
+
+            post4 = Post(
+                title='分享一些免费的动漫素材网站',
+                content='收集了一些好用的免费动漫素材网站，分享给大家：\n\n1. Pixiv - 画师交流平台\n2. Anime Backgrounds - 免费动漫背景素材\n3. OpenMoji - 开源表情包\n4. Kenney - 游戏素材（包含动漫风格）\n\n都是我自己常用的，良心推荐！',
+                user_id=4,
+                category_id=3,
+                view_count=1024
+            )
+
+            # Create sample comments
+            comment1 = Comment(
+                content='太棒了！这个论坛界面好好看！粉粉的主题超级喜欢~',
+                post_id=1,
+                user_id=2
+            )
+
+            comment2 = Comment(
+                content='终于找到了一个动漫爱好者聚集地！开心！',
+                post_id=1,
+                user_id=3
+            )
+
+            comment3 = Comment(
+                content='谢谢整理！我最期待《咒术回战》第二季，已经等不及了！',
+                post_id=2,
+                user_id=4
+            )
+
+            comment4 = Comment(
+                content='《进击的巨人》确实神作！结局太震撼了...',
+                post_id=2,
+                user_id=1
+            )
+
+            comment5 = Comment(
+                content='建议先学习绘画基础，然后再学习软件操作。推荐Proko的课程！',
+                post_id=3,
+                user_id=1
+            )
+
+            comment6 = Comment(
+                content='这些素材网站太实用了！已收藏！',
+                post_id=4,
+                user_id=2
             )
 
             # Create sample announcement
             announcement = Announcement(
-                title='论坛上线公告',
-                content='欢迎使用我们的论坛系统！请遵守社区规则，文明发言。',
+                title='🎊 动漫论坛正式上线！',
+                content='欢迎使用我们的动漫论坛系统！请遵守社区规则，文明发言，共同维护和谐的讨论氛围~',
                 is_pinned=True
             )
 
-            db.session.add_all([admin, user] + categories + [sample_post, announcement])
+            db.session.add_all([
+                admin, user, user2, user3
+            ] + categories + [
+                sample_post, post2, post3, post4,
+                comment1, comment2, comment3, comment4, comment5, comment6,
+                announcement
+            ])
             db.session.commit()
 
-            print("Database initialized with sample data!")
+            print("Database initialized with sample data and anime theme!")
